@@ -118,14 +118,14 @@ uint8_t*	md5(char *input)
 	md5Update(&md5, (uint8_t *)input, strlen(input));
 	md5Finalize(&md5);
 
-	// if ((result = (uint8_t *)malloc(sizeof(*result) * 16)) == NULL)
-	// {
-	// 	fprintf(stderr,"Malloc error: %s\n", strerror(errno));
-	// 	exit(1);
-	// }
+	if ((result = (uint8_t *)malloc(sizeof(*result) * 16)) == NULL)
+	{
+		fprintf(stderr,"Malloc error: %s\n", strerror(errno));
+		exit(1);
+	}
 	//bzero(&result, sizeof(result));
-	//memcpy(result, md5.result, 16);
-	result = md5.result;
+	memcpy(result, md5.result, 16);
+	//result = md5.result;
 	print_hash(result);
 	return (result);
 }
@@ -134,7 +134,7 @@ void print_hash(uint8_t *p)
 {
 	for(unsigned int i = 0; i < 16; ++i)
 	{
-		printf("%02x ", p[i]);
+		printf("%02x", p[i]);
 	}
 	printf("\n");
 }

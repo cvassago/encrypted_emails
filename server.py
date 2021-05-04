@@ -9,7 +9,8 @@ password = getpass.getpass(prompt='Get password: ')
 
 if (password):
 	print('pass = ' + password)
-	print('hash = ', md5_c_func(password))
+	res = md5_c_func(password)
+	print('hash = ', hex(res))
 else:
 	print('No pass')
 
