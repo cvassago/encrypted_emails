@@ -1,16 +1,18 @@
 import getpass
-import ctypes
+from ctypes import *
 
-md5_c = ctypes.CDLL('/home/dasha/University/Crypto/Kursach/code/crypto/md5.so')
-md5_c_func = lambda input: md5_c.md5(ctypes.c_char_p(input.encode('utf-8')))
+libcrypto = CDLL('./libcrypto.so')
+md5 = libcrypto.md5
+md5.argtype = c_char_p
+md5.restype = c_char_p
 
 #email = input()
 password = getpass.getpass(prompt='Get password: ')
 
 if (password):
 	print('pass = ' + password)
-	res = md5_c_func(password)
-	print('hash = ', hex(res))
+	res = md5(password)[:16]
+	print('hash = ', res.hex())
 else:
 	print('No pass')
 
