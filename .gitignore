@@ -1,2 +1,9 @@
 *.o
 *.so
+
+serverDB
+emailDB
+users
+
+main.py
+__pycache__

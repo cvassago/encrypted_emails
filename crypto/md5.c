@@ -1,19 +1,21 @@
 #include "md5.h"
 
-void md5Finalize(t_md5 *md5)
+void	md5Finalize(t_md5 *md5)
 {
-	uint32_t input[16];
-	unsigned int offset = md5->inputSizeInBytes % 64;
-	unsigned int padding_length = offset < 56 ? 56 - offset : (56 + 64) - offset;
+	uint32_t		input[16];
+	unsigned int	offset;
+	unsigned int	paddingLength;
 
-	md5Update(md5, PADDING, padding_length);
-	md5->inputSizeInBytes -= (uint64_t)padding_length;
+	offset = md5->inputSizeInBytes % 64;
+	paddingLength = offset < 56 ? 56 - offset : (56 + 64) - offset;
+	md5Update(md5, PADDING, paddingLength);
+	md5->inputSizeInBytes -= (uint64_t)paddingLength;
 	for(unsigned int j = 0; j < 14; ++j)
 	{
 		input[j] = (uint32_t)(md5->nextStepInput[(j * 4) + 3]) << 24 |
-		           (uint32_t)(md5->nextStepInput[(j * 4) + 2]) << 16 |
-		           (uint32_t)(md5->nextStepInput[(j * 4) + 1]) <<  8 |
-		           (uint32_t)(md5->nextStepInput[(j * 4)]);
+				(uint32_t)(md5->nextStepInput[(j * 4) + 2]) << 16 |
+				(uint32_t)(md5->nextStepInput[(j * 4) + 1]) <<  8 |
+				(uint32_t)(md5->nextStepInput[(j * 4)]);
 	}
 	input[14] = (uint32_t)(md5->inputSizeInBytes * 8);
 	input[15] = (uint32_t)((md5->inputSizeInBytes * 8) >> 32);
@@ -28,13 +30,14 @@ void md5Finalize(t_md5 *md5)
 	}
 }
 
-void md5Step(uint32_t *buffer, uint32_t *input)
+void	md5Step(uint32_t *hashAccumulator, uint32_t *input)
 {
-	uint32_t		AA = buffer[0];
-	uint32_t		BB = buffer[1];
-	uint32_t		CC = buffer[2];
-	uint32_t		DD = buffer[3];
+	uint32_t		AA = hashAccumulator[0];
+	uint32_t		BB = hashAccumulator[1];
+	uint32_t		CC = hashAccumulator[2];
+	uint32_t		DD = hashAccumulator[3];
 	uint32_t		E;
+	uint32_t		temp;
 	unsigned int	j;
 	unsigned int	i;
 
@@ -59,16 +62,16 @@ void md5Step(uint32_t *buffer, uint32_t *input)
 				j = (i * 7) % 16;
 				break;
 		}
-		uint32_t temp = DD;
+		temp = DD;
 		DD = CC;
 		CC = BB;
 		BB = BB + LEFT_ROTATE((AA + E + K[i] + input[j]), S[i]);
 		AA = temp;
 	}
-	buffer[0] += AA;
-	buffer[1] += BB;
-	buffer[2] += CC;
-	buffer[3] += DD;
+	hashAccumulator[0] += AA;
+	hashAccumulator[1] += BB;
+	hashAccumulator[2] += CC;
+	hashAccumulator[3] += DD;
 }
 
 void	md5Update(t_md5 *md5, uint8_t *inputBuffer, size_t inputLen)
@@ -88,9 +91,9 @@ void	md5Update(t_md5 *md5, uint8_t *inputBuffer, size_t inputLen)
 			for(j = 0; j < 16; ++j)
 			{
 				input[j] = (uint32_t)(md5->nextStepInput[(j * 4) + 3]) << 24 |
-							(uint32_t)(md5->nextStepInput[(j * 4) + 2]) << 16 |
-							(uint32_t)(md5->nextStepInput[(j * 4) + 1]) <<  8 |
-							(uint32_t)(md5->nextStepInput[(j * 4)]);
+						(uint32_t)(md5->nextStepInput[(j * 4) + 2]) << 16 |
+						(uint32_t)(md5->nextStepInput[(j * 4) + 1]) <<  8 |
+						(uint32_t)(md5->nextStepInput[(j * 4)]);
 			}
 			md5Step(md5->hashAccumulator, input);
 			offset = 0;
@@ -100,8 +103,6 @@ void	md5Update(t_md5 *md5, uint8_t *inputBuffer, size_t inputLen)
 
 void	md5Init(t_md5 *md5)
 {
-	md5->inputSizeInBytes = (uint64_t)0;
-
 	md5->hashAccumulator[0] = (uint32_t)A;
 	md5->hashAccumulator[1] = (uint32_t)B;
 	md5->hashAccumulator[2] = (uint32_t)C;
@@ -118,23 +119,14 @@ uint8_t*	md5(char *input)
 	md5Update(&md5, (uint8_t *)input, strlen(input));
 	md5Finalize(&md5);
 
-	if ((result = (uint8_t *)malloc(sizeof(*result) * 16)) == NULL)
-	{
-		fprintf(stderr,"Malloc error: %s\n", strerror(errno));
-		exit(1);
-	}
-	//bzero(&result, sizeof(result));
-	memcpy(result, md5.result, 16);
-	//result = md5.result;
-	print_hash(result);
+	result = md5.result;
+	//printHash(result);
 	return (result);
 }
 
-void print_hash(uint8_t *p)
+void printHash(uint8_t *p)
 {
 	for(unsigned int i = 0; i < 16; ++i)
-	{
 		printf("%02x", p[i]);
-	}
 	printf("\n");
 }
