@@ -9,6 +9,7 @@ from Crypto.Util import number
 import sys
 from random import randint
 from Crypto.PublicKey.RSA import RsaKey, generate
+from sympy.ntheory.factor_ import totient
 
 libcrypto = CDLL('./libcrypto.so')
 md5_n = libcrypto.md5
@@ -127,12 +128,12 @@ def sendKeys(cur, email, domain):
 			int(cur.execute('SELECT q FROM domain WHERE domain=?', [domain]).fetchone()[0])
 	print('PrivateKey\n{', keys[0], ', ', n, '}\n')
 	print('PublicKey\n{', keys[1], ', ', n, '}')
-	os.makedirs('./users/'+ login + '/key', exist_ok=True)
+	os.makedirs('./users/'+ login + '/secrets', exist_ok=True)
 	with open('./emailDB/publickey', 'w') as f:
 		f.write(str(n))
 	if keys[0]:
-		with open('./users/'+ login + '/key/key', 'w') as f:
-			f.write('PrivateKey\n' + keys[0] + '\n' + str(n) + '\n')
+		with open('./users/'+ login + '/secrets/key', 'w') as f:
+			f.write(keys[0])
 	exit()
 
 if __name__ == "__main__":
@@ -172,8 +173,15 @@ if __name__ == "__main__":
 							[domain, str(pq[0]), str(pq[1])])
 			conn.commit()
 		if (password):
+			print(1)
+			n = (int(cur.execute('SELECT p FROM domain WHERE domain=?', [domain]).fetchone()[0]) - 1) * \
+				(int(cur.execute('SELECT q FROM domain WHERE domain=?', [domain]).fetchone()[0]) - 1)
+			p = int(cur.execute('SELECT p FROM domain WHERE domain=?', [domain]).fetchone()[0])
+			q = int(cur.execute('SELECT q FROM domain WHERE domain=?', [domain]).fetchone()[0])
+			fi = ((p - 1) / 2) * ((q - 1) / 2)
+			d = pow(int(emailHash.hex(), 16), int(fi), n)
 			cur.execute("""INSERT INTO users(email, passwordHash, privateKey, publicKey) VALUES(?, ?, ?, ?) ON CONFLICT DO NOTHING;""",
-							[email, str(passwordHash.hex()), d, str(emailHash.hex())])
+							[email, str(passwordHash.hex()), str(d), str(emailHash.hex())])
 			conn.commit()
 		else:
 			cur.execute("""INSERT INTO users(email, passwordHash, privateKey, publicKey) VALUES(?, ?, ?, ?) ON CONFLICT DO NOTHING;""",
