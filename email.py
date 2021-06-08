@@ -26,7 +26,8 @@ def getKey():
 	f = open('/dev/random', 'rb')
 	FEK = f.read(32)
 	f.close()
-	return FEK
+	key = int.from_bytes(FEK, byteorder='big')
+	return key
 
 def getN():
 	f = open('./emailDB/publickey')
@@ -66,7 +67,7 @@ def sendMessage(emailFrom):
 		exit()
 
 	key = getKey()
-	rsaMagic = pow(int(key.hex(), 16), public_key, getN())
+	rsaMagic = pow(key, public_key, getN())
 	#print(rsaMagic)
 	header = rsaMagic.to_bytes(32, byteorder='big')
 
@@ -103,8 +104,8 @@ def readMessages(emailFrom):
 				b64 = json.load(f)
 			json_k = [ 'nonce', 'header', 'ciphertext', 'tag' ]
 			jv = {k:b64decode(b64[k]) for k in json_k}
-			print(jv['header'])
-			keyString = int.from_bytes(jv['header'], byteorder='big')
+			print(json_k['header'])
+			keyString = int.from_bytes(json_k['header'], byteorder='big')
 			key = pow(keyString, getRSAKey(emailFrom.split('@')[0]), getN())
 			print(key)
 			cipher = AES.new(str(key).encode(), AES.MODE_EAX, nonce=jv['nonce'])

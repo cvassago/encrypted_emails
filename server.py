@@ -177,8 +177,8 @@ if __name__ == "__main__":
 				(int(cur.execute('SELECT q FROM domain WHERE domain=?', [domain]).fetchone()[0]) - 1)
 			p = int(cur.execute('SELECT p FROM domain WHERE domain=?', [domain]).fetchone()[0])
 			q = int(cur.execute('SELECT q FROM domain WHERE domain=?', [domain]).fetchone()[0])
-			fi = ((p - 1) / 2) * ((q - 1) / 2)
-			d = pow(int(emailHash.hex(), 16), int(fi), n)
+			fi = ((p - 1) >> 1) * ((q - 1) >> 1)
+			d = pow(int(emailHash.hex(), 16), fi - 1, n)
 			cur.execute("""INSERT INTO users(email, passwordHash, privateKey, publicKey) VALUES(?, ?, ?, ?) ON CONFLICT DO NOTHING;""",
 							[email, str(passwordHash.hex()), str(d), str(emailHash.hex())])
 			conn.commit()
