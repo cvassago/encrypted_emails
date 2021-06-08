@@ -17,9 +17,9 @@ md5_n.argtype = c_char_p
 md5_n.restype = c_char_p
 
 def helloServer():
-	print(Fore.GREEN +  '_______ _______ _______ _______ _______ _______      _______ _______ _______ _    _ _______ _______')
-	print(Fore.GREEN +  '|______ |______ |       |_____/ |______    |         |______ |______ |_____/  \  /  |______ |_____/')
-	print(Fore.GREEN +  '______| |______ |______ |    \_ |______    |         ______| |______ |    \_   \/   |______ |    \_')
+	print(Fore.GREEN + '_______ _______ _______ _______ _______ _______      _______ _______ _______ _    _ _______ _______')
+	print(Fore.GREEN + '|______ |______ |       |_____/ |______    |         |______ |______ |_____/  \  /  |______ |_____/')
+	print(Fore.GREEN + '______| |______ |______ |    \_ |______    |         ______| |______ |    \_   \/   |______ |    \_')
 	print(Style.RESET_ALL)
 
 def infoAboutPassword():
@@ -173,7 +173,6 @@ if __name__ == "__main__":
 							[domain, str(pq[0]), str(pq[1])])
 			conn.commit()
 		if (password):
-			print(1)
 			n = (int(cur.execute('SELECT p FROM domain WHERE domain=?', [domain]).fetchone()[0]) - 1) * \
 				(int(cur.execute('SELECT q FROM domain WHERE domain=?', [domain]).fetchone()[0]) - 1)
 			p = int(cur.execute('SELECT p FROM domain WHERE domain=?', [domain]).fetchone()[0])

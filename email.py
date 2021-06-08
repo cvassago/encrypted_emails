@@ -68,11 +68,12 @@ def sendMessage(emailFrom):
 	key = getKey()
 	rsaMagic = pow(int(key.hex(), 16), public_key, getN())
 	#print(rsaMagic)
-	header = (str(rsaMagic) + '\n' + emailFrom).encode()
+	header = rsaMagic.to_bytes(32, byteorder='big')
 
+	text = emailFrom + '\n' + message
 	cipher = AES.new(key, AES.MODE_EAX)
 	cipher.update(header)
-	ciphertext, tag = cipher.encrypt_and_digest(message.encode("utf8"))
+	ciphertext, tag = cipher.encrypt_and_digest(text.encode("utf8"))
 	
 	json_k = [ 'nonce', 'header', 'ciphertext', 'tag' ]
 	json_v = [ b64encode(x).decode('utf-8') for x in [cipher.nonce, header, ciphertext, tag] ]
@@ -103,14 +104,14 @@ def readMessages(emailFrom):
 			json_k = [ 'nonce', 'header', 'ciphertext', 'tag' ]
 			jv = {k:b64decode(b64[k]) for k in json_k}
 			print(jv['header'])
-			keyString = jv['header'].decode('utf-8').split('\n')[0]
-			key = pow(int(keyString), getRSAKey(emailFrom.split('@')[0]), getN())
+			keyString = int.from_bytes(jv['header'], byteorder='big')
+			key = pow(keyString, getRSAKey(emailFrom.split('@')[0]), getN())
 			print(key)
 			cipher = AES.new(str(key).encode(), AES.MODE_EAX, nonce=jv['nonce'])
 			cipher.update(jv['header'])
 			plaintext = cipher.decrypt_and_verify(jv['ciphertext'], jv['tag'])
 			print("The message was: " + plaintext)
-		except [ValueError, KeyError]:
+		except [ValueError, KeyError]: 
 			print(Fore.RED + "Incorrect decryption")
 			print(Style.RESET_ALL)
 			exit()
